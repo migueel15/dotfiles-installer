@@ -1,5 +1,3 @@
-#!/bin/bash
-
 sudo pacman -Syy &> /dev/null
 
 if ! which gum &> /dev/null; then
