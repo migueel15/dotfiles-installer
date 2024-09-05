@@ -11,9 +11,13 @@ if ! which bw &> /dev/null; then
 	sudo pacman -S --noconfirm bitwarden-cli &> /dev/null
 fi
 
+#--- SET UP BITWARDEN ---#
+
 BW_PATH=$HOME/.bw_session
 
-if [[ ! -f $BW_PATH ]]; then
+STATUS=$(bw status | jq -r ".status")
+
+if [[ $STATUS == "unauthenticated" ]]; then
 	echo "Login to $(gum style --foreground 212 'bitwarden')"
 	while true; do
 		BW_SESSION=$(bw login --raw)
@@ -26,6 +30,13 @@ if [[ ! -f $BW_PATH ]]; then
 			echo "$(gum style --foreground 212 'Error:') Invalid credentials"
 		fi
 	done
+else
+	if [[ $STATUS == "locked" ]]; then
+		echo "Unlocking $(gum style --foreground 212 'bitwarden')"
+		BW_SESSION=$(bw unlock --raw)
+		echo "$BW_SESSION" > $BW_PATH
+		export BW_SESSION
+	fi
 fi
 
 # Set git credentials
