@@ -1,3 +1,5 @@
+#!/bin/bash
+
 sudo pacman -Syy &> /dev/null
 
 if ! which gum &> /dev/null; then
@@ -49,5 +51,5 @@ echo -e "Setup $(gum style --foreground 212 "Git") completed!"
 
 local DOTFILES_URL="https://github.com/migueel15/dotfiles.git"
 local DOTFILES_PATH="$HOME/.config/dotfiles"
-git clone $DOTFILES_URL $DOTFILES_PATH &> /dev/null
+gum spin --spinner dot --title "Cloning dotfiles..." -- git clone $DOTFILES_URL $DOTFILES_PATH &> /dev/null
 bash $DOTFILES_PATH/bin/dotfiles
