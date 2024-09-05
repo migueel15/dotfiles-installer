@@ -1,0 +1,55 @@
+#!/bin/bash
+
+sudo pacman -Syy &> /dev/null
+
+if ! which gum &> /dev/null; then
+	sudo pacman -S --noconfirm gum &> /dev/null
+fi
+
+if ! which bw &> /dev/null; then
+	gum spin --spinner dot --title "Checking for $(gum style --foreground 212 'bitwarden-cli')" -- sleep 1
+	sudo pacman -S --noconfirm bitwarden-cli &> /dev/null
+fi
+
+local BW_PATH=$HOME/.bw_session
+
+if [[ ! -f $BW_PATH ]]; then
+	echo "Login to $(gum style --foreground 212 'bitwarden')"
+	while true; do
+		BW_SESSION=$(bw login --raw)
+		if [[ $? -eq 0 ]]; then
+			echo "$(gum style --foreground 212 'Login successful')"
+			echo "$BW_SESSION" > $BW_PATH
+			export BW_SESSION
+			break
+		else
+			echo "$(gum style --foreground 212 'Error:') Invalid credentials"
+		fi
+	done
+fi
+
+# Set git credentials
+bw sync
+local GIT_DATA=$(bw get item "git-credentials")
+
+local GITHUB_USER=$(echo $GIT_DATA | jq -r ".fields[0].value")
+local GITHUB_EMAIL=$(echo $GIT_DATA | jq -r ".fields[1].value")
+local GITHUB_TOKEN=$(echo $GIT_DATA | jq -r ".fields[2].value")
+
+
+git config --global user.email $GITHUB_EMAIL
+git config --global user.name $GITHUB_USER
+git config --global credential.helper store
+#
+# Crear ~/.git-credentials si no existe
+if [ ! -f ~/.git-credentials ]; then
+    touch ~/.git-credentials
+fi
+
+echo "https://$GITHUB_USER:$GITHUB_TOKEN@github.com" > ~/.git-credentials
+echo -e "Setup $(gum style --foreground 212 "Git") completed!"
+
+local DOTFILES_URL="https://github.com/migueel15/dotfiles.git"
+local DOTFILES_PATH="$HOME/.config/dotfiles"
+git clone $DOTFILES_URL $DOTFILES_PATH &> /dev/null
+bash $DOTFILES_PATH/bin/dotfiles
