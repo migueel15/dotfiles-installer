@@ -29,18 +29,16 @@ if [[ ! -f $BW_PATH ]]; then
 fi
 
 # Set git credentials
-bw sync
-GIT_DATA=$(bw get item "git-credentials")
+gum spin --spinner dot --title "Syncing bitwarden..." -- bw sync
+GIT_DATA=$(gum spin --spinner dot --title "Setting up git..." -- bw get item "git-credentials")
 
-GITHUB_USER=$(echo $GIT_DATA | jq -r ".fields[0].value")
-GITHUB_EMAIL=$(echo $GIT_DATA | jq -r ".fields[1].value")
-GITHUB_TOKEN=$(echo $GIT_DATA | jq -r ".fields[2].value")
-
-
-git config --global user.email $GITHUB_EMAIL
-git config --global user.name $GITHUB_USER
+GITHUB_USER=$(echo $GIT_DATA | jq -r ".fields[0].value") 
+GITHUB_EMAIL=$(echo $GIT_DATA | jq -r ".fields[1].value") 
+GITHUB_TOKEN=$(echo $GIT_DATA | jq -r ".fields[2].value") 
+git config --global user.email $GITHUB_EMAIL 
+git config --global user.name $GITHUB_USER 
 git config --global credential.helper store
-#
+
 # Crear ~/.git-credentials si no existe
 if [ ! -f ~/.git-credentials ]; then
     touch ~/.git-credentials
@@ -51,5 +49,5 @@ echo -e "Setup $(gum style --foreground 212 "Git") completed!"
 
 DOTFILES_URL="https://github.com/migueel15/dotfiles.git"
 DOTFILES_PATH="$HOME/.config/dotfiles"
-gum spin --spinner dot --title "Cloning dotfiles..." -- git clone $DOTFILES_URL $DOTFILES_PATH &> /dev/null
+gum spin --spinner dot --title "Cloning dotfiles..." -- git clone $DOTFILES_URL $DOTFILES_PATH
 bash $DOTFILES_PATH/bin/dotfiles
